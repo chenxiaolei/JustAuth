@@ -1,6 +1,6 @@
 
-![](_media/logo.png)
-# JustAuth <small>1.13.1</small>
+![](_media/justauth@0,25x.png)
+# JustAuth <small>1.14.0</small>
 
 <strong>史上最全的整合第三方登录的开源库</strong>
 

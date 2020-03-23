@@ -14,15 +14,20 @@
   <meta itemprop="description" content="JustAuth，如你所见，它仅仅是一个第三方授权登录的工具类库，它可以让我们脱离繁琐的第三方登录SDK，让登录变得So easy!" />
   <meta itemprop="image" content="./_media/cover.png" />
 
-  <link rel="shortcut icon" href="favicon.ico">
-  <link rel="stylesheet" href="//unpkg.com/docsify/lib/themes/vue.css">
+  <link rel="shortcut icon" href="_media/justauth@0,1x.png">
+  <link rel="stylesheet" href="//unpkg.com/docsify/themes/vue.css">
+  <link rel="stylesheet" href="//unpkg.com/gitalk/dist/gitalk.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.css">
 
 </head>
 <body>
-  <div id="app">Please wait...</div>
+  <div data-app id="app">Please wait...</div>
   <script>
+    var num = 0;
     window.$docsify = {
-      name: '<img src="./_media/cover.png" width="200"><br>Login, so easy',
+      el: '#app',
+      name: 'JustAuth',
+      // logo: '_media/Justauth-横向@0,5x.png',
       search: {
         maxAge: 86400000,
         noData: {
@@ -30,7 +35,7 @@
         },
         paths: 'auto',
         placeholder: {
-          '/': '搜索'
+          '/': '输入您的关键词进行搜索'
         }
       },
       repo: 'https://gitee.com/yadong.zhang/JustAuth',
@@ -39,7 +44,9 @@
       subMaxLevel: 2,
       auto2top: true,
       coverpage: true,
+      autoHeader: true,
       formatUpdated: '{YYYY}/{MM}/{DD} {HH}:{mm}:{ss}',
+      notFoundPage: '_404.md',
       plugins: [
         function (hook, vm) {
           var footer = [
@@ -58,17 +65,54 @@
 
             return  html
               + '\n----\n'
-              + 'Last modified {docsify-updated} '
+              + '最后更新时间： {docsify-updated} '
               + editHtml
           })
         }
-      ]
+      ],
+      markdown: {
+          renderer: {
+              code: function(code, lang) {
+                  if (lang === "mermaid") {
+                      return (
+                          '<div class="mermaid">' + mermaid.render('mermaid-svg-' + num++, code) + "</div>"
+                      );
+                  }
+                  return this.origin.code.apply(this, arguments);
+              }
+          }
+      }
     }
   </script>
   <script src="//unpkg.com/docsify/lib/docsify.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mermaid@7.1.0/dist/mermaid.min.js"></script>
+  <script src="//unpkg.com/docsify/lib/plugins/search.min.js"></script>
+  <script src="//unpkg.com/docsify-copy-code"></script>
+  <script src="//cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
   <script>mermaid.initialize({startOnLoad:true});</script>
+  <script src="//unpkg.com/prismjs/components/prism-java.min.js"></script>
+  <script src="//unpkg.com/docsify/lib/plugins/emoji.js"></script>
+  <script src="//unpkg.com/docsify/lib/plugins/gitalk.min.js"></script>
+  <script src="//unpkg.com/gitalk/dist/gitalk.min.js"></script>
 
+  <script>
+      const gitalk = new Gitalk({
+          clientID: 'e58f172df200e88e266b',
+          clientSecret: 'ee22ce68934616f7de043a950cbdb7d613a03202',
+          repo: 'justauth-talk',
+          owner: 'zhangyd-c',
+          admin: ['zhangyd-c'],
+          id: location.hash,
+          // facebook-like distraction free mode
+          distractionFreeMode: false
+      })
+  </script>
+
+  <script>
+    ((window.gitter = {}).chat = {}).options = {
+      room: 'yadong-zhang/justauth'
+    };
+  </script>
+  <script src="https://sidecar.gitter.im/dist/sidecar.v1.js" async defer></script>
 
   <!-- 百度统计 -->
   <script>

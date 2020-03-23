@@ -1,8 +1,7 @@
 package me.zhyd.oauth.request;
 
-import cn.hutool.http.HttpRequest;
-import cn.hutool.http.HttpResponse;
 import com.alibaba.fastjson.JSONObject;
+import com.xkcoding.http.HttpUtil;
 import me.zhyd.oauth.cache.AuthStateCache;
 import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.config.AuthDefaultSource;
@@ -39,7 +38,7 @@ public class AuthWeChatEnterpriseRequest extends AuthDefaultRequest {
      */
     @Override
     protected AuthToken getAccessToken(AuthCallback authCallback) {
-        HttpResponse response = doGetAuthorizationCode(accessTokenUrl(authCallback.getCode()));
+        String response = doGetAuthorizationCode(accessTokenUrl(authCallback.getCode()));
 
         JSONObject object = this.checkResponse(response);
 
@@ -52,18 +51,16 @@ public class AuthWeChatEnterpriseRequest extends AuthDefaultRequest {
 
     @Override
     protected AuthUser getUserInfo(AuthToken authToken) {
-        HttpResponse response = doGetUserInfo(authToken);
+        String response = doGetUserInfo(authToken);
         JSONObject object = this.checkResponse(response);
 
         // 返回 OpenId 或其他，均代表非当前企业用户，不支持
         if (!object.containsKey("UserId")) {
-            throw new AuthException(AuthResponseStatus.UNIDENTIFIED_PLATFORM);
+            throw new AuthException(AuthResponseStatus.UNIDENTIFIED_PLATFORM, source);
         }
         String userId = object.getString("UserId");
-        HttpResponse userDetailResponse = getUserDetail(authToken.getAccessToken(), userId);
+        String userDetailResponse = getUserDetail(authToken.getAccessToken(), userId);
         JSONObject userDetail = this.checkResponse(userDetailResponse);
-
-        String gender = getRealGender(userDetail);
 
         return AuthUser.builder()
             .username(userDetail.getString("name"))
@@ -72,7 +69,7 @@ public class AuthWeChatEnterpriseRequest extends AuthDefaultRequest {
             .location(userDetail.getString("address"))
             .email(userDetail.getString("email"))
             .uuid(userId)
-            .gender(AuthUserGender.getRealGender(gender))
+            .gender(AuthUserGender.getWechatRealGender(userDetail.getString("gender")))
             .token(authToken)
             .source(source.toString())
             .build();
@@ -84,28 +81,14 @@ public class AuthWeChatEnterpriseRequest extends AuthDefaultRequest {
      * @param response 请求结果
      * @return 如果请求结果正常，则返回JSONObject
      */
-    private JSONObject checkResponse(HttpResponse response) {
-        JSONObject object = JSONObject.parseObject(response.body());
+    private JSONObject checkResponse(String response) {
+        JSONObject object = JSONObject.parseObject(response);
 
         if (object.containsKey("errcode") && object.getIntValue("errcode") != 0) {
-            throw new AuthException(object.getIntValue("errcode"), object.getString("errmsg"));
+            throw new AuthException(object.getString("errmsg"), source);
         }
 
         return object;
-    }
-
-    /**
-     * 获取用户的实际性别，0表示未定义，1表示男性，2表示女性
-     *
-     * @param userDetail 用户详情
-     * @return 用户性别
-     */
-    private String getRealGender(JSONObject userDetail) {
-        int gender = userDetail.getIntValue("gender");
-        if (AuthUserGender.MALE.getCode() == gender) {
-            return "1";
-        }
-        return 2 == gender ? "0" : null;
     }
 
     /**
@@ -160,12 +143,12 @@ public class AuthWeChatEnterpriseRequest extends AuthDefaultRequest {
      * @param userId      企业内用户id
      * @return 用户详情
      */
-    private HttpResponse getUserDetail(String accessToken, String userId) {
+    private String getUserDetail(String accessToken, String userId) {
         String userDetailUrl = UrlBuilder.fromBaseUrl("https://qyapi.weixin.qq.com/cgi-bin/user/get")
             .queryParam("access_token", accessToken)
             .queryParam("userid", userId)
             .build();
-        return HttpRequest.get(userDetailUrl).execute();
+        return HttpUtil.get(userDetailUrl);
     }
 
 }

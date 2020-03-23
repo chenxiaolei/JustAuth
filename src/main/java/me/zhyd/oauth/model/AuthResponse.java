@@ -1,8 +1,8 @@
 package me.zhyd.oauth.model;
 
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
 import me.zhyd.oauth.enums.AuthResponseStatus;
+
 import java.io.Serializable;
 
 /**
@@ -12,6 +12,7 @@ import java.io.Serializable;
  * @since 1.8
  */
 @Getter
+@Setter
 @Builder
 public class AuthResponse<T> implements Serializable {
     /**

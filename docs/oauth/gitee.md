@@ -55,7 +55,7 @@ AuthRequest authRequest = new AuthGiteeRequest(AuthConfig.builder()
 
 我们可以直接使用以下方式生成第三方平台的授权链接：
 ```java
-String authorizeUrl = authRequest.authorize();
+String authorizeUrl = authRequest.authorize(AuthStateUtils.createState());
 ```
 这个链接我们可以直接后台重定向跳转，也可以返回到前端后，前端控制跳转。前端控制的好处就是，可以将第三方的授权页嵌入到iframe中，适配网站设计。
 
@@ -65,7 +65,9 @@ String authorizeUrl = authRequest.authorize();
 ```java
 import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.request.AuthGiteeRequest;
+import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.request.AuthRequest;
+import me.zhyd.oauth.utils.AuthStateUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -81,13 +83,13 @@ public class RestAuthController {
     @RequestMapping("/render")
     public void renderAuth(HttpServletResponse response) throws IOException {
         AuthRequest authRequest = getAuthRequest();
-        response.sendRedirect(authRequest.authorize());
+        response.sendRedirect(authRequest.authorize(AuthStateUtils.createState()));
     }
 
     @RequestMapping("/callback")
-    public Object login(String code) {
+    public Object login(AuthCallback callback) {
         AuthRequest authRequest = getAuthRequest();
-        return authRequest.login(code);
+        return authRequest.login(callback);
     }
 
     private AuthRequest getAuthRequest() {
@@ -106,7 +108,7 @@ public class RestAuthController {
 
 ## 3. 授权结果
 
-注：数据以脱敏
+注：数据已脱敏
 
 ```json
 {
